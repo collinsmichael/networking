@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <time.h>
 #include "network.h"
 
 #define role "server"
@@ -12,9 +13,9 @@ int main(int argc, char *argv[]) {
     }
 
     int port = atoi(argv[1]);
-    pass("port = %d\n", port);
-    info("port = %d\n", port);
-    warn("port = %d\n", port);
-    fail("port = %d\n", port);
+    pass("port = %d", port);
+    info("port = %d", port);
+    warn("port = %d", port);
+    fail("port = %d", port);
     return 0;
 }
