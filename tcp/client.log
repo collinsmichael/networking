@@ -1,0 +1,5 @@
+ [32m[pass] client port = 7777
+[0m [36m[info] client port = 7777
+[0m [33m[warn] client port = 7777
+[0m [31m[fail] client port = 7777
+[0m
