@@ -20,28 +20,12 @@ static inline char *datetime(void) {
     return now;
 }
 
-#define pass(fmt, ...) do { \
-    char *now = datetime(); \
-    fprintf(stdout,     "%s [pass] "role" "fmt     "\n", now, __VA_ARGS__); \
-    fprintf(stderr, GRN "%s [pass] "role" "fmt RET "\n", now, __VA_ARGS__); \
-} while (0)
-
-#define info(fmt, ...) do { \
-    char *now = datetime(); \
-    fprintf(stdout,     "%s [info] "role" "fmt     "\n", now, __VA_ARGS__); \
-    fprintf(stderr, BLU "%s [info] "role" "fmt RET "\n", now, __VA_ARGS__); \
-} while (0)
-
-#define warn(fmt, ...) do { \
-    char *now = datetime(); \
-    fprintf(stdout,     "%s [warn] "role" "fmt     "\n", now, __VA_ARGS__); \
-    fprintf(stderr, YEL "%s [warn] "role" "fmt RET "\n", now, __VA_ARGS__); \
-} while (0)
-
+#define pass(fmt, ...) fprintf(stderr, GRN "%s [pass] "role" " fmt RET "\n", datetime(), ##__VA_ARGS__)
+#define info(fmt, ...) fprintf(stderr, BLU "%s [info] "role" " fmt RET "\n", datetime(), ##__VA_ARGS__)
+#define warn(fmt, ...) fprintf(stderr, YEL "%s [warn] "role" " fmt RET "\n", datetime(), ##__VA_ARGS__)
 #define fail(fmt, ...) do { \
-    char *now = datetime(); \
-    fprintf(stdout,     "%s [fail] "role" "fmt     "\n", now, __VA_ARGS__); \
-    fprintf(stderr, RED "%s [fail] "role" "fmt RET "\n", now, __VA_ARGS__); \
+    fprintf(stderr, RED "%s [fail] "role" " fmt RET "\n", datetime(), ##__VA_ARGS__); \
+    exit(-1); \
 } while (0)
 
 #endif // NETWORK_H
