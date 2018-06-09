@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<users>
+    <user>
+        <firstname>Michael</firstname>
+        <lastname>Collins</lastname>
+    </user>
+    <user>
+        <firstname>Joe</firstname>
+        <lastname>Bloggs</lastname>
+    </user>
+    <user>
+        <firstname>John</firstname>
+        <lastname>Doe</lastname>
+    </user>
+</users>

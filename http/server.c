@@ -137,7 +137,14 @@ int main(int argc, char *argv[]) {
                 strcpy(path,    "root/200.html");
                 strcpy(status,  "200 OK");
                 strcpy(today,   date());
-                strcpy(content, "text/html; charset=UTF-8");
+
+                if (strstr(path, ".json")) {
+                    strcpy(content, "application/json; charset=UTF-8");
+                } else if (strstr(path, ".xml")) {
+                    strcpy(content, "application/xml; charset=UTF-8");
+                } else if (strstr(path, ".json")) {
+                    strcpy(content, "text/html; charset=UTF-8");
+                }
             } else {
                 strcpy(path,    "root/404.html");
                 strcpy(status,  "404 NOT FOUND");
