@@ -1,0 +1,40 @@
+HTTP/1.1 304 Not Modified
+Date: Sat, 09 Jun 2018 10:30:54 GMT
+Via: 1.1 varnish
+Cache-Control: max-age=300
+ETag: "48b713bca3ff6ac81839e24c8f787def62c0d069"
+Connection: keep-alive
+X-Served-By: cache-lcy19232-LCY
+X-Cache: MISS
+X-Cache-Hits: 0
+X-Timer: S1528540255.806186,VS0,VE710
+Vary: Authorization,Accept-Encoding
+Access-Control-Allow-Origin: *
+X-Fastly-Request-ID: 1ce04c97d92c4184ebd3440a8eec04a80e08862a
+Expires: Sat, 09 Jun 2018 10:35:55 GMT
+Source-Age: 0
+
+#!/bin/bash
+USER=$(whoami)
+HOST=$(hostname)
+SEEK=
+
+if [ $# -eq 0 ]; then
+	echo " ========================================================"
+	echo " Poor man's monitor"
+	echo " usage: watch -n 0.2 monitor.sh command1 command2 ..."
+	echo " ========================================================"
+else
+	for var in "$@"
+	do
+	    SEEK="\|"$var$SEEK
+	done
+	echo $USER"@"$HOST"> swapon -s"
+	swapon -s | \
+	awk '{ print $3"\t"$1 }'
+	echo " "
+	echo $USER"@"$HOST"> top -bn 1"
+	top -bn 1 | \
+	grep "%MEM"$SEEK | \
+	awk '{ print $1"\t"$9"\t"$10"\t" $5"\t"$6"\t"$7"\t" $12 }'
+fi
