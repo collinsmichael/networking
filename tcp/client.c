@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
     static struct sockaddr_in saddr;
     memset(&saddr, 0, sizeof(saddr));
     saddr.sin_family      = AF_INET;
-    saddr.sin_addr.s_addr = inet_addr(host);
+    saddr.sin_addr.s_addr = gethostname(host, _SC_HOST_NAME_MAX);
     saddr.sin_port        = htons(port);
     if (connect(sock, (struct sockaddr*)&saddr, sizeof(saddr)) < 0) {
         fail("failed to connect to %s:%d", host, port);
