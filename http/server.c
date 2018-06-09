@@ -15,7 +15,6 @@
 static int server;
 static struct sockaddr_in saddr;
 static struct sockaddr_in caddr;
-
 void sigkill(int code) {
     close(server);
     exit(code);
@@ -53,6 +52,7 @@ int main(int argc, char *argv[]) {
     signal(SIGTERM, sigkill);
     signal(SIGKILL, sigkill);
     signal(SIGQUIT, sigkill);
+    fseek(stdin, 0, SEEK_END);
 
     int port = atoi(argv[1]);
     if (startup(port)) {
@@ -70,6 +70,9 @@ int main(int argc, char *argv[]) {
 
             // ----------------------------------------------------------------
             // receive HTTP request header
+            char *map[1024];
+            int count = 0;
+
             char request[1024];
             int size = sizeof(request);
             memset(request, 0, sizeof(request));
@@ -92,6 +95,34 @@ int main(int argc, char *argv[]) {
                 info("rx (%s) DELETE %d bytes (%s)\n", ip, took, path);
             } else {
                 warn("rx (%s) ERROR %d bytes (%s)\n", ip, took, path);
+            }
+
+            // ---------------------------------------------------------------
+            // TODO FIXME this code block is open to buffer overflows
+            char *args = 0;
+            for (args = path; *args; args++) {
+                if (*args == '?') {
+                    *args++ = 0;
+                    for (count = 0; *args; ) {
+                        if (count >= 1024) break;
+                        for (map[count++] = args; *args; args++) {
+                            if (*args == '=') {
+                                *args++ = 0;
+                                break;
+                            }
+                        }
+                        for (map[count++] = args; *args; args++) {
+                            if (*args == '&') {
+                                *args++ = 0;
+                                break;
+                            }
+                        }
+                    }
+                    for (int i = 0; i < count; i+=2) {
+                        info("rx (%s) HTTP ARG (%s=%s)\n", ip, map[i], map[i+1]);
+                    }
+                    break;
+                }
             }
 
             // ----------------------------------------------------------------
