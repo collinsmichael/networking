@@ -2,6 +2,7 @@
 usage: http port > logfile
 
 http is a bare bones http web server.
+can be tested through a web browser (http://localhost:port/index.html).
 http is designed to output to terminal through stderr (2>) and outputs to a logfile through stdout (>). The path to the logfile must be specified on the command line.
 
 the root sub-directory acts as the web root folder.
