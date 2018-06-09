@@ -20,6 +20,7 @@ int logger(char *color, char *level, char *format, ...) {
     va_start(args, format);
     fprintf(stdout, "%s [%s] ", now, level);
     vfprintf(stdout, format, args);
+    fflush(stdout);
     va_end(args);
 
     va_start(args, format);
@@ -27,6 +28,7 @@ int logger(char *color, char *level, char *format, ...) {
     fprintf(stderr, "%s [%s] ", now, level);
     vfprintf(stderr, format, args);
     fprintf(stderr, "\x1B[0m");
+    fflush(stderr);
     va_end(args);
     return 1;
 }

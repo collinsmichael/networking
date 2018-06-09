@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <time.h>
 #include <unistd.h>
@@ -56,30 +57,93 @@ int main(int argc, char *argv[]) {
     int port = atoi(argv[1]);
     if (startup(port)) {
         for (;;) {
+            // ----------------------------------------------------------------
+            // accept connections from clients
             unsigned int len = sizeof(caddr);
             int client = accept(server, (struct sockaddr*)&caddr, &len);
+            char *ip = inet_ntoa(caddr.sin_addr);
             if (client < 0) {
-                warn("client failed to connect!\n");
+                warn("rx (%s) CONNECT FAILED!\n", ip);
             } else {
-                info("client connected\n");
+                info("rx (%s) CONNECT\n", ip);
             }
 
-            char echo[1024];
-            int size = sizeof(echo);
+            // ----------------------------------------------------------------
+            // receive HTTP request header
+            char request[1024];
+            int size = sizeof(request);
+            memset(request, 0, sizeof(request));
+            int took = recv(client, request, size, 0);
 
-            memset(echo, 0, sizeof(echo));
-            int took = recv(client, echo, size, 0);
-            if (took != size) {
-                warn("message only partially received!\n");
+            char method[1024];
+            char path[1024];
+            memset(method,  0, sizeof(method));
+            memset(path,    0, sizeof(path));
+            strcpy(path,    "root");
+            sscanf(request, "%s %s", method, &path[strlen(path)]);
+
+            if (strncmp(request, "GET", 3) == 0) {
+                info("rx (%s) GET %d bytes (%s)\n", ip, took, path);
+            } else if (strncmp(request, "POST", 4) == 0) {
+                info("rx (%s) POST %d bytes (%s)\n", ip, took, path);
+            } else if (strncmp(request, "PUT", 3) == 0) {
+                info("rx (%s) PUT %d bytes (%s)\n", ip, took, path);
+            } else if (strncmp(request, "DELETE", 6) == 0) {
+                info("rx (%s) DELETE %d bytes (%s)\n", ip, took, path);
+            } else {
+                warn("rx (%s) ERROR %d bytes (%s)\n", ip, took, path);
             }
-            info("received %d bytes!\n%s\n",took, echo);
-            fflush(stdout);
 
-            int sent = send(client, echo, size, 0);
-            if (sent != size) {
-                warn("message only partially sent!\n");
+            // ----------------------------------------------------------------
+            // transmit HTTP response header
+            char status[64];
+            char today[64];
+            char content[64];
+            int length = 0;
+
+            FILE *file = fopen(path, "rb");
+            if (file) {
+                strcpy(path,    "root/200.html");
+                strcpy(status,  "200 OK");
+                strcpy(today,   date());
+                strcpy(content, "text/html; charset=UTF-8");
+            } else {
+                strcpy(path,    "root/404.html");
+                strcpy(status,  "404 NOT FOUND");
+                strcpy(today,   date());
+                strcpy(content, "text/html; charset=UTF-8");
+                file = fopen("root/404.html", "rb");
             }
+            fseek(file, 0, SEEK_END);
+            length = ftell(file);
+            fseek(file, 0, SEEK_SET);
 
+            char header[512];
+            sprintf(header,
+                    "HTTP/1.1 %s\n"
+                    "Date: %s\n"
+                    "Server: servername\n"
+                    "Content-Type: %s\n"
+                    "Content-Length: %d\n"
+                    "\n",
+                    status, today, content, length);
+
+            send(client, header, strlen(header), 0);
+            info("tx (%s) HTTP HEADER\n", ip);
+            info("tx (%s)\n%s", ip, header);
+
+            if (file) {
+                while (length > 0) {
+                    char response[1024];
+                    int partition = (length < sizeof(response))
+                        ? length
+                        : sizeof(response);
+                    fread(response, 1, partition, file);
+                    send(client, response, partition, 0);
+                    length -= partition;
+                }
+                info("tx (%s) HTML (%s)\n", ip, path);
+            }
             close(client);
         }
     }
